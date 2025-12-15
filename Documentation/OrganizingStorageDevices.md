@@ -120,26 +120,36 @@ This guide provides best practices for organizing and managing storage devices, 
 
 ## Password and Documentation Management
 
-### Small Notebooks for Passwords
+### Password Management Best Practices
 
-**Organization System:**
-1. Use color-coded notebooks:
-   - One color for personal accounts
-   - Another for work/project accounts
-   - Separate color for network/hardware configurations
+**Primary Recommendation: Use an Encrypted Password Manager**
+- Use a reputable password manager (e.g., 1Password, Bitwarden, KeePassXC)
+- Enable two-factor authentication with YubiKeys
+- Store unique, strong passwords for each account
+- Keep password manager database backed up securely
+- Use master password that is memorable but strong
 
-2. Structure entries consistently:
-   - Service/device name
-   - Username/account ID
-   - Password (consider using password manager instead for critical accounts)
-   - Recovery codes/questions
-   - Date of last change
+### Physical Backup for Critical Recovery Codes
 
-3. Security considerations:
+Physical notebooks should be used **only** for emergency backup of critical information:
+
+1. **What to store physically:**
+   - Password manager master password recovery codes
+   - YubiKey backup codes
+   - Hardware device admin passwords (router, NAS)
+   - Offline backup encryption keys
+
+2. **Organization system for physical backups:**
+   - Use color-coded notebooks for different categories
+   - One for personal recovery codes
+   - One for network/hardware configurations
+   - One for emergency access information
+
+3. **Security for physical notebooks:**
    - Store in locked drawer or safe
    - Never leave in common areas
-   - Consider encrypted password manager as primary solution
-   - Use notebooks as backup only
+   - Keep separate from devices they protect
+   - Consider waterproof/fireproof storage container
 
 ### Color-Coded System
 
