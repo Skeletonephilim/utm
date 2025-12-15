@@ -1,4 +1,4 @@
-#  Mini PC
+# UTM
 [![Build](https://github.com/utmapp/UTM/workflows/Build/badge.svg?branch=main&event=push)][1]
 
 > It is possible to invent a single machine which can be used to compute any computable sequence.
@@ -48,6 +48,17 @@ UTM is also available for macOS: https://mac.getutm.app/
 ### [macOS Development](Documentation/MacDevelopment.md)
 
 ### [iOS Development](Documentation/iOSDevelopment.md)
+
+## Security
+
+### [Securing Devices with Kali Linux](Documentation/SecuringDevicesWithKaliLinux.md)
+
+A comprehensive guide for deploying Kali Linux on a mini PC for security analysis, forensics, and recovering from compromised environments. Includes step-by-step instructions for:
+- Bare-metal Kali Linux deployment vs. UTM virtualization
+- Router hardening and network segmentation
+- macOS forensics and remediation
+- Hardware security key setup (Yubico)
+- Best practices for rebuilding a trusted environment
 
 ## Related
 
