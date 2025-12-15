@@ -49,6 +49,12 @@ UTM is also available for macOS: https://mac.getutm.app/
 
 ### [iOS Development](Documentation/iOSDevelopment.md)
 
+## Hardware Management
+
+### [Organizing Storage Devices](Documentation/OrganizingStorageDevices.md)
+
+Learn how to organize and manage storage devices, security hardware, and peripherals for your UTM virtualization setup.
+
 ## Related
 
 * [iSH][4]: emulates a usermode Linux terminal interface for running x86 Linux applications on iOS
