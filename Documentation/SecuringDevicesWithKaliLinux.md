@@ -505,6 +505,8 @@ Default username: admin
 Default password: admin (or password on device label)
 ```
 
+**⚠️ CRITICAL SECURITY WARNING:** These default credentials are publicly known. Change them IMMEDIATELY upon first login to prevent unauthorized access.
+
 **Set strong admin password:**
 - Minimum 20 characters
 - Store in password manager
@@ -1421,8 +1423,10 @@ defaults delete com.utmapp.UTM
 # Remove UTM application cache
 rm -rf ~/Library/Caches/com.utmapp.UTM
 
-# Verify removal
-find ~ -name "*UTM*" -o -name "*utm*" 2>/dev/null | grep -v "Library/Application Support"
+# Verify removal (checks home directory only for safety)
+find ~ -name "*UTM*" -o -name "*utm*" 2>/dev/null | grep -v "Application Support" | grep -v ".Trash"
+
+# If any files remain, review them before deletion
 ```
 
 #### Reset UTM to Factory Settings
@@ -1456,6 +1460,8 @@ ls -la ~/.ssh/
 #### 2. Remove SSH Keys from Remote Servers
 
 **For GitHub:**
+
+**⚠️ Before starting:** Verify your 2FA (Yubico key or authenticator) is working to avoid account lockout.
 
 1. Visit https://github.com/settings/keys (requires 2FA)
 2. Review all SSH keys listed
@@ -1591,6 +1597,11 @@ cat <<EOF | sudo tee /etc/paths
 /usr/sbin
 /sbin
 EOF
+
+# Note: If you use Xcode, homebrew, or other dev tools, you may need to:
+# - Re-run: xcode-select --install
+# - Re-run: eval "$(/opt/homebrew/bin/brew shellenv)"
+# - Test system functionality after this change
 ```
 
 #### macOS Recovery Mode Cleanup
@@ -1793,13 +1804,18 @@ cat /dev/null > ~/.zsh_history
 history -c
 
 # Remove any UTM-related files (if mini PC had UTM installed)
-find / -name "*utm*" -o -name "*UTM*" 2>/dev/null | xargs rm -rf
+# SAFE: Only search user directories, not entire filesystem
+find ~/ /opt /usr/local -name "*utm*" -o -name "*UTM*" 2>/dev/null
+
+# Review output, then manually remove if safe:
+# rm -rf /path/to/utm/file
 
 # Clear system logs
 sudo journalctl --vacuum-time=1s
 
 # Remove old user accounts (if any suspicious accounts exist)
-sudo cat /etc/passwd | grep -v nologin
+# List only usernames (more secure than full passwd file)
+cut -d: -f1 /etc/passwd | grep -v "^_" | grep -v "nobody\|root\|daemon\|sync"
 # For each suspicious user:
 sudo userdel -r suspicious_username
 
