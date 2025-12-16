@@ -11,15 +11,17 @@
 3. [Kali Linux Deployment: VM vs. Mini PC](#kali-linux-deployment-vm-vs-mini-pc)
 4. [Secure Kali Linux Setup](#secure-kali-linux-setup)
 5. [GL.iNet Router Hardening](#glinet-router-hardening)
-6. [Network Isolation Strategy](#network-isolation-strategy)
-7. [macOS Forensics & Kext Detection](#macos-forensics--kext-detection)
-8. [Packet Capture & Analysis](#packet-capture--analysis)
-9. [MacBook Remediation](#macbook-remediation)
-10. [Email & Yubico Key Setup](#email--yubico-key-setup)
-11. [Removable Media Safety](#removable-media-safety)
-12. [Rebuilding Trusted Environment](#rebuilding-trusted-environment)
-13. [Tools Reference](#tools-reference)
-14. [UTM Integration Guide](#utm-integration-guide)
+6. [TP-Link Mesh Router Hardening](#tp-link-mesh-router-hardening)
+7. [Network Isolation Strategy](#network-isolation-strategy)
+8. [macOS Forensics & Kext Detection](#macos-forensics--kext-detection)
+9. [Packet Capture & Analysis](#packet-capture--analysis)
+10. [MacBook Remediation](#macbook-remediation)
+11. [Email & Yubico Key Setup](#email--yubico-key-setup)
+12. [Cleanup and Account Security](#cleanup-and-account-security)
+13. [Removable Media Safety](#removable-media-safety)
+14. [Rebuilding Trusted Environment](#rebuilding-trusted-environment)
+15. [Tools Reference](#tools-reference)
+16. [UTM Integration Guide](#utm-integration-guide)
 
 ---
 
@@ -467,6 +469,221 @@ sudo systemctl restart rsyslog
 
 # Logs will appear in /var/log/syslog
 ```
+
+---
+
+## TP-Link Mesh Router Hardening
+
+If you're using TP-Link Deco, Omada, or other TP-Link mesh systems instead of or in addition to GL.iNet:
+
+### Factory Reset Procedure
+
+**TP-Link Deco Mesh:**
+
+1. Locate reset button (usually on bottom)
+2. While powered on, press and hold reset button for 10 seconds
+3. LED will turn red, then flash, then restart
+4. Wait 2-3 minutes for complete reset
+5. Reconfigure using Deco app
+
+**TP-Link Omada:**
+
+1. Access web interface (usually http://tplinkwifi.net or http://192.168.0.1)
+2. Login with default credentials (admin/admin)
+3. Go to System Tools → Factory Defaults → Reset
+4. Or use hardware reset button (10 seconds)
+
+### Basic Security Configuration
+
+#### 1. Change Default Credentials
+
+```
+Default access:
+- Deco App: Download from App Store
+- Web: http://tplinkwifi.net or http://192.168.0.1
+Default username: admin
+Default password: admin (or password on device label)
+```
+
+**Set strong admin password:**
+- Minimum 20 characters
+- Store in password manager
+- Change both web interface AND app password
+
+#### 2. Firmware Update
+
+**Via Deco App:**
+1. Open Deco app
+2. Tap on the menu icon
+3. Go to "System" → "Firmware Update"
+4. If update available, tap "Update"
+5. **Do not interrupt during update** (15-20 minutes)
+
+**Via Web Interface (Omada):**
+1. Login to web interface
+2. System Tools → Firmware Upgrade
+3. Download latest from https://www.tp-link.com/support/
+4. Verify checksum if provided
+5. Upload and upgrade
+
+#### 3. Disable Unnecessary Services
+
+**In Deco App:**
+- More → Advanced → NAT Forwarding → Disable if not needed
+- More → Advanced → UPnP → Disable (security risk)
+- IPv6 → Disable if not required (reduces attack surface)
+
+**In Web Interface (Omada):**
+- Settings → Services → Disable UPnP
+- Settings → Remote Management → Disable
+- Settings → WPS → Disable
+
+#### 4. Wireless Security
+
+**Encryption Settings:**
+- Security: WPA2/WPA3-Personal (or WPA3-Personal only if all devices support)
+- Password: 20+ character passphrase
+- Guest Network: Separate password, isolation enabled
+
+**In Deco App:**
+```
+Home → [Select Main Network] → Network Settings
+- Security: WPA2/WPA3
+- Password: [Strong password]
+- Fast Roaming: Enable (for mesh handoff)
+- Beamforming: Enable
+```
+
+#### 5. Guest Network Isolation
+
+**Critical for compromised device quarantine:**
+
+1. Enable Guest Network:
+   - More → Guest Network → Enable
+   - Set strong password
+   - Set usage time limit if desired
+
+2. **Enable Guest Network Isolation:**
+   - Prevents guest devices from accessing main network
+   - Prevents device-to-device communication
+   - Deco App: This is automatic
+   - Omada: Settings → Guest Network → Enable "Allow guests to access each other: No"
+
+#### 6. Advanced TP-Link Mesh Configuration
+
+**QoS (Quality of Service):**
+```
+More → QoS → Enable
+- High Priority: Video calls, work devices (MacBook)
+- Standard Priority: iPhone, general browsing
+- Low Priority: IoT devices, smart home
+```
+
+**Parental Controls (for device filtering):**
+```
+More → Parental Controls
+- Create profile for each device type
+- Set content filters
+- Use to temporarily isolate suspicious devices
+```
+
+**Network Optimization:**
+```
+More → Advanced → Network Optimization
+- Run optimization weekly
+- Helps identify compromised devices (unusual bandwidth usage)
+```
+
+#### 7. TP-Link Cloud Disable (Optional)
+
+**For maximum security, disable cloud management:**
+
+**Deco:**
+- This is harder on Deco as it's cloud-focused
+- Consider using local-only mode in advanced settings
+- Or switch to Omada for local management
+
+**Omada:**
+- Settings → Cloud Access → Disable
+- Use local controller only
+- Access via LAN only
+
+#### 8. VLAN Support (Omada Only)
+
+**TP-Link Omada supports VLANs similar to GL.iNet:**
+
+```
+Settings → Wired Networks → LAN
+- Create VLAN 10 (Trusted): 192.168.10.0/24
+- Create VLAN 20 (IoT): 192.168.20.0/24
+- Create VLAN 30 (Guest): 192.168.30.0/24
+- Create VLAN 40 (Quarantine): 192.168.40.0/24
+
+Settings → Wireless Networks
+- Assign each SSID to appropriate VLAN
+- Enable inter-VLAN isolation rules
+```
+
+**Note:** Deco mesh does NOT support VLANs. For VLAN segmentation with Deco, you need:
+- TP-Link managed switch with VLAN support
+- Or upgrade to Omada system
+
+#### 9. Logging and Monitoring
+
+**Enable comprehensive logging:**
+
+**Deco App:**
+```
+More → Advanced → System → System Log
+- Enable logging
+- Check regularly for suspicious connections
+```
+
+**Omada:**
+```
+Settings → System → Log Settings
+- Enable system log
+- Set log level: Informational
+- Enable remote syslog (send to Kali mini PC):
+  - Server: [Kali IP]
+  - Port: 514
+```
+
+### TP-Link Security Best Practices
+
+**Do:**
+- ✅ Update firmware monthly
+- ✅ Use WPA3 if all devices support it
+- ✅ Enable guest network isolation
+- ✅ Disable cloud access (Omada)
+- ✅ Change admin password every 90 days
+- ✅ Review connected devices weekly
+
+**Don't:**
+- ❌ Use default credentials
+- ❌ Enable UPnP
+- ❌ Enable WPS
+- ❌ Share admin access
+- ❌ Skip firmware updates
+- ❌ Ignore suspicious devices in device list
+
+### Hybrid Setup: TP-Link + GL.iNet
+
+If using both routers:
+
+**Option 1: TP-Link Primary, GL.iNet Secondary**
+- TP-Link Mesh: Main network for home
+- GL.iNet: Secure network for clean devices only
+- Connected via ethernet to TP-Link LAN port
+- GL.iNet operates in "Router Mode" not "AP Mode"
+
+**Option 2: GL.iNet Primary, TP-Link Mesh Secondary**
+- GL.iNet: Primary with VLANs and security
+- TP-Link in AP Mode: Extends WiFi coverage
+- Configure TP-Link as Access Point only
+- All routing/security handled by GL.iNet
+
+**Recommended:** Option 2 for maximum security control
 
 ---
 
@@ -1176,6 +1393,537 @@ System Settings → General → Software Update
    - Use for: Enterprise systems, SSH
 
 **Prefer FIDO2 whenever available.**
+
+---
+
+## Cleanup and Account Security
+
+### UTM Data and Configuration Cleanup
+
+If you've been using UTM and need to ensure all data is removed from compromised VMs:
+
+#### Remove All UTM VMs and Data
+
+**On macOS:**
+
+```bash
+# Close UTM application first
+killall UTM 2>/dev/null
+
+# Remove all UTM VMs and data
+rm -rf ~/Library/Containers/com.utmapp.UTM
+rm -rf ~/Library/Group\ Containers/*.com.utmapp.UTM
+rm -rf ~/Documents/UTM
+
+# Remove UTM preferences
+defaults delete com.utmapp.UTM
+
+# Remove UTM application cache
+rm -rf ~/Library/Caches/com.utmapp.UTM
+
+# Verify removal
+find ~ -name "*UTM*" -o -name "*utm*" 2>/dev/null | grep -v "Library/Application Support"
+```
+
+#### Reset UTM to Factory Settings
+
+If you're keeping UTM but want to start fresh:
+
+1. Open UTM
+2. Delete all existing VMs:
+   - Right-click each VM → Delete
+   - Confirm deletion and select "Delete all files"
+3. Quit UTM
+4. Run cleanup commands above
+5. Reinstall UTM from https://mac.getutm.app/
+
+### SSH Key Invalidation
+
+**Revoke all SSH keys from compromised systems:**
+
+#### 1. Identify All SSH Keys
+
+```bash
+# List all SSH keys on macOS
+ls -la ~/.ssh/
+
+# Common key files:
+# - id_rsa / id_rsa.pub (RSA keys)
+# - id_ed25519 / id_ed25519.pub (Ed25519 keys)
+# - id_ecdsa / id_ecdsa.pub (ECDSA keys)
+```
+
+#### 2. Remove SSH Keys from Remote Servers
+
+**For GitHub:**
+
+1. Visit https://github.com/settings/keys (requires 2FA)
+2. Review all SSH keys listed
+3. Click "Delete" next to each key from compromised devices
+4. Confirm deletion
+
+**For GitLab, Bitbucket, etc.:**
+
+Similar process in account settings → SSH Keys section
+
+**For personal servers:**
+
+```bash
+# Connect to each server and remove from authorized_keys
+ssh user@server
+
+# Edit authorized_keys file
+nano ~/.ssh/authorized_keys
+
+# Remove all entries from compromised devices
+# Save and exit
+
+# Set correct permissions
+chmod 600 ~/.ssh/authorized_keys
+```
+
+#### 3. Generate New SSH Keys
+
+**On clean MacBook after remediation:**
+
+```bash
+# Generate new Ed25519 key (recommended)
+ssh-keygen -t ed25519 -C "your-new-email@protonmail.com"
+
+# Or RSA 4096-bit (if Ed25519 not supported)
+ssh-keygen -t rsa -b 4096 -C "your-new-email@protonmail.com"
+
+# Set passphrase when prompted (store in password manager)
+
+# Add to ssh-agent
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+# Copy public key
+cat ~/.ssh/id_ed25519.pub
+```
+
+#### 4. Add New Keys to Services
+
+Re-add the new public keys to:
+- GitHub (https://github.com/settings/keys)
+- GitLab, Bitbucket, etc.
+- Personal servers' `~/.ssh/authorized_keys`
+
+### macOS Cleanup: xtrace and $PATH
+
+#### Remove xtrace Debugging
+
+If `xtrace` was enabled for debugging or maliciously:
+
+```bash
+# Check if xtrace is set
+echo $-
+
+# Remove from shell configuration files
+sed -i.bak '/set -x/d' ~/.zshrc ~/.bash_profile ~/.bashrc 2>/dev/null
+sed -i.bak '/set -o xtrace/d' ~/.zshrc ~/.bash_profile ~/.bashrc 2>/dev/null
+
+# Check for xtrace in system launch items
+sudo grep -r "xtrace" /Library/LaunchDaemons/ /Library/LaunchAgents/ ~/Library/LaunchAgents/
+
+# Remove any suspicious entries found
+```
+
+#### Clean $PATH Variable
+
+**Inspect and clean $PATH:**
+
+```bash
+# View current PATH
+echo $PATH | tr ':' '\n'
+
+# Look for suspicious entries:
+# - /tmp or /var/tmp directories
+# - Hidden directories (starting with .)
+# - Unusual locations
+# - Non-standard /usr/local subdirectories
+```
+
+**Reset $PATH to default:**
+
+```bash
+# Backup current shell configs
+cp ~/.zshrc ~/.zshrc.backup 2>/dev/null
+cp ~/.bash_profile ~/.bash_profile.backup 2>/dev/null
+
+# For zsh (macOS default)
+cat > ~/.zshrc << 'EOF'
+# Clean PATH
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+# Add Homebrew if installed
+if [ -f /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+# Add user bin if exists
+[ -d "$HOME/bin" ] && export PATH="$HOME/bin:$PATH"
+EOF
+
+# Source new config
+source ~/.zshrc
+
+# Verify clean PATH
+echo $PATH | tr ':' '\n'
+```
+
+**Remove malicious PATH entries from system-wide configs:**
+
+```bash
+# Check system-wide PATH configurations
+sudo cat /etc/paths
+sudo ls -la /etc/paths.d/
+
+# Remove suspicious files in paths.d
+sudo rm /etc/paths.d/suspicious-entry
+
+# Reset /etc/paths to default (macOS)
+cat <<EOF | sudo tee /etc/paths
+/usr/local/bin
+/usr/bin
+/bin
+/usr/sbin
+/sbin
+EOF
+```
+
+#### macOS Recovery Mode Cleanup
+
+**Access Recovery Mode for deep cleanup:**
+
+1. **Boot into Recovery:**
+   - Intel Mac: Restart, hold `Command + R`
+   - Apple Silicon: Shutdown, hold power button until "Options" appears
+
+2. **Open Terminal** (from Utilities menu)
+
+3. **Remove remote management profiles:**
+   ```bash
+   # List profiles
+   profiles list
+   
+   # Remove specific profile
+   profiles remove -identifier com.example.profile
+   
+   # Remove all profiles
+   profiles remove -all
+   ```
+
+4. **Check for persistence mechanisms:**
+   ```bash
+   # Mount main drive
+   diskutil list
+   diskutil mount /dev/disk1s1  # Adjust as needed
+   
+   # Check launch items
+   ls -la /Volumes/Macintosh\ HD/Library/LaunchDaemons/
+   ls -la /Volumes/Macintosh\ HD/Library/LaunchAgents/
+   
+   # Remove suspicious items
+   rm /Volumes/Macintosh\ HD/Library/LaunchDaemons/com.suspicious.plist
+   ```
+
+5. **Reset NVRAM/PRAM:**
+   - Shutdown
+   - Turn on and immediately hold: `Option + Command + P + R`
+   - Release after second startup chime (Intel) or Apple logo appears/disappears twice (Apple Silicon)
+
+### Google Account Access Cleanup
+
+**Comprehensive Google account security audit:**
+
+#### 1. Review Account Access
+
+Visit https://myaccount.google.com/permissions (requires 2FA with Yubico key)
+
+**Actions:**
+
+1. **Third-party app access:**
+   - Review all apps with account access
+   - Remove any unrecognized or unnecessary apps
+   - Click "Remove Access" for each
+
+2. **Connected apps and sites:**
+   - Go to https://myaccount.google.com/connections
+   - Remove all apps you don't actively use
+   - Prioritize removing apps installed before compromise
+
+#### 2. Review Devices and Activity
+
+**Check signed-in devices:**
+
+1. Visit https://myaccount.google.com/device-activity
+2. Review all devices with access
+3. Click "Sign out" on any:
+   - Unrecognized devices
+   - Devices from before remediation
+   - Compromised MacBook/iPhone (before cleanup)
+
+**Review recent activity:**
+
+1. Visit https://myaccount.google.com/notifications
+2. Check for suspicious sign-ins
+3. Document any anomalies for forensic record
+
+#### 3. Contacts Cleanup
+
+**Remove potentially compromised contacts:**
+
+1. Visit https://contacts.google.com/
+2. Review all contacts
+3. Look for:
+   - Contacts you don't recognize
+   - Suspicious email addresses
+   - Contacts added during compromise period
+
+4. Delete suspicious entries:
+   - Select contact
+   - Click "Delete" (trash icon)
+   - Confirm deletion
+
+5. **Export clean contacts for backup:**
+   ```
+   More → Export → Select format (Google CSV)
+   ```
+
+#### 4. Google Drive Access
+
+**Audit shared files and folders:**
+
+1. Visit https://drive.google.com/
+2. Click "Shared with me"
+3. Review all shared items
+4. Remove access to suspicious files:
+   - Right-click → "Remove"
+
+5. Check "Shared by me":
+   - Review what you've shared
+   - Remove sharing from sensitive files
+   - Click file → Share → Remove people
+
+#### 5. Gmail Cleanup
+
+**Remove forwarding and delegates:**
+
+1. Gmail Settings → "Forwarding and POP/IMAP"
+2. Disable any forwarding addresses you didn't set up
+3. Click "Delete" next to suspicious forwarding addresses
+
+4. Check "Accounts and Import" → "Grant access to your account"
+5. Remove any delegate access you didn't authorize
+
+**Check filters for data exfiltration:**
+
+1. Settings → "Filters and Blocked Addresses"
+2. Review all filters
+3. Delete suspicious filters that:
+   - Forward emails automatically
+   - Delete emails automatically
+   - Apply unusual labels
+
+#### 6. Chrome Sync Cleanup
+
+**If you use Chrome:**
+
+1. Visit https://chrome.google.com/sync
+2. Click "Reset Sync"
+3. This removes:
+   - Browsing history
+   - Bookmarks (backup first if needed)
+   - Passwords (you're resetting these anyway)
+   - Extensions (reinstall clean versions)
+
+#### 7. Android Device Cleanup
+
+**If you have Android devices:**
+
+1. Visit https://myaccount.google.com/find-your-phone
+2. Review all linked Android devices
+3. Remove old/compromised devices:
+   - Click device → "Sign out"
+   - For stolen/lost: Click "Secure device" or "Erase device"
+
+#### 8. Google Account Recovery Options
+
+**Secure recovery methods:**
+
+1. Visit https://myaccount.google.com/recovery
+2. Update recovery email to your new ProtonMail
+3. Update recovery phone to new SIM (after carrier security setup)
+4. Add Yubico keys as backup method (already done in Yubico section)
+
+### Mini PC Data Cleanup
+
+**If your mini PC was previously used in compromised environment:**
+
+#### 1. Secure Wipe and Reinstall Kali
+
+**Complete reinstall (recommended):**
+
+```bash
+# Boot from Kali USB installer
+# Select "Install Kali Linux" (not rescue mode)
+# During partitioning:
+# - Select "Guided - use entire disk and set up encrypted LVM"
+# - This will securely overwrite all data
+# - Follow installation steps from "Secure Kali Linux Setup" section
+```
+
+#### 2. If Keeping Existing Installation - Deep Clean
+
+**Remove all user data and SSH keys:**
+
+```bash
+# Backup any needed files first to encrypted external drive
+
+# Remove SSH keys
+rm -rf ~/.ssh/
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+
+# Clear bash/zsh history
+cat /dev/null > ~/.bash_history
+cat /dev/null > ~/.zsh_history
+history -c
+
+# Remove any UTM-related files (if mini PC had UTM installed)
+find / -name "*utm*" -o -name "*UTM*" 2>/dev/null | xargs rm -rf
+
+# Clear system logs
+sudo journalctl --vacuum-time=1s
+
+# Remove old user accounts (if any suspicious accounts exist)
+sudo cat /etc/passwd | grep -v nologin
+# For each suspicious user:
+sudo userdel -r suspicious_username
+
+# Clear temp directories
+sudo rm -rf /tmp/*
+sudo rm -rf /var/tmp/*
+
+# Remove package cache
+sudo apt clean
+sudo apt autoclean
+```
+
+#### 3. Reset Network Configuration
+
+```bash
+# Remove old network connections
+sudo rm -rf /etc/NetworkManager/system-connections/*
+
+# Restart NetworkManager
+sudo systemctl restart NetworkManager
+
+# Reconfigure for trusted network only
+sudo nmcli connection add type wifi con-name "Trusted-Network" \
+  ssid "YourSecureSSID" \
+  wifi-sec.key-mgmt wpa-psk \
+  wifi-sec.psk "YourSecurePassword"
+```
+
+#### 4. Regenerate Host Keys
+
+**SSH server host keys may be compromised:**
+
+```bash
+# Remove old SSH host keys
+sudo rm /etc/ssh/ssh_host_*
+
+# Regenerate new keys
+sudo dpkg-reconfigure openssh-server
+
+# Restart SSH service
+sudo systemctl restart sshd
+
+# Verify new keys generated
+sudo ls -la /etc/ssh/ssh_host_*
+```
+
+#### 5. Update and Harden
+
+```bash
+# Full system update
+sudo apt update && sudo apt upgrade -y && sudo apt dist-upgrade -y
+
+# Re-run hardening steps from "Secure Kali Linux Setup" section
+sudo rkhunter --update
+sudo rkhunter --propupd
+sudo rkhunter --check --skip-keypress
+
+# Update AIDE database
+sudo aideinit
+sudo mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+```
+
+#### 6. Remove Persistence Mechanisms
+
+**Check for rootkits and persistence:**
+
+```bash
+# Check systemd services
+sudo systemctl list-unit-files --type=service --state=enabled
+
+# Look for suspicious services
+sudo systemctl list-units --type=service --all | grep -i "suspicious\|unknown"
+
+# Check cron jobs
+sudo crontab -l
+sudo cat /etc/crontab
+sudo ls -la /etc/cron.d/
+sudo ls -la /etc/cron.daily/
+sudo ls -la /etc/cron.hourly/
+sudo ls -la /etc/cron.monthly/
+sudo ls -la /etc/cron.weekly/
+
+# Remove suspicious entries
+sudo crontab -r  # Remove root crontab if compromised
+```
+
+#### 7. Verify Boot Integrity
+
+```bash
+# Check boot configuration
+sudo ls -la /boot/
+sudo cat /boot/grub/grub.cfg | grep -v "^#" | head -20
+
+# Verify no unauthorized kernel modules
+lsmod | grep -v "^Module"
+
+# Check for rootkit kernel modules
+sudo rkhunter --check --enable hidden_procs,hidden_ports
+
+# If rootkits found, reinstall is strongly recommended
+```
+
+#### 8. Document Clean State
+
+**After cleanup, document baseline:**
+
+```bash
+# Create system snapshot information
+echo "=== Mini PC Clean State ===" > ~/mini-pc-baseline.txt
+echo "Date: $(date)" >> ~/mini-pc-baseline.txt
+echo "" >> ~/mini-pc-baseline.txt
+
+# Document installed packages
+dpkg -l >> ~/mini-pc-baseline.txt
+
+# Document running services
+systemctl list-units --type=service --state=running >> ~/mini-pc-baseline.txt
+
+# Document network configuration
+ip addr >> ~/mini-pc-baseline.txt
+
+# Store securely
+chmod 600 ~/mini-pc-baseline.txt
+```
 
 ---
 
