@@ -18,7 +18,7 @@ import SwiftUI
 
 private var memoryAlertOnce = false
 
-@objc public extension VMDisplayViewController {
+@objc extension VMDisplayViewController {
     var runInBackground: Bool {
         boolForSetting("RunInBackground")
     }
@@ -29,7 +29,7 @@ private var memoryAlertOnce = false
 }
 
 // MARK: - View Loading
-public extension VMDisplayViewController {
+extension VMDisplayViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -78,7 +78,7 @@ public extension VMDisplayViewController {
 }
 
 // MARK: Toolbar hiding
-public extension VMDisplayViewController {
+extension VMDisplayViewController {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             if touch.type == .direct {
@@ -91,7 +91,7 @@ public extension VMDisplayViewController {
 }
 
 // MARK: Helper functions
-@objc public extension VMDisplayViewController {
+@objc extension VMDisplayViewController {
     /*
      - (void)onDelay:(float)delay action:(void (^)(void))block {
          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC*0.1), dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), block);
