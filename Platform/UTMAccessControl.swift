@@ -47,16 +47,25 @@ final class UTMAccessControl {
     #if os(iOS) || os(visionOS)
     /// Get the iCloud email for iOS/visionOS
     private static func getiCloudEmail() -> String? {
-        if let ubiquityToken = FileManager.default.ubiquityIdentityToken {
-            // Try to get the email from UserDefaults which may have been cached
-            if let cachedEmail = UserDefaults.standard.string(forKey: "AppleIDEmail") {
+        // Check if iCloud is available
+        guard FileManager.default.ubiquityIdentityToken != nil else {
+            return nil
+        }
+        
+        // Try to get the email from UserDefaults which may have been cached
+        if let cachedEmail = UserDefaults.standard.string(forKey: "AppleIDEmail") {
+            if isValidEmail(cachedEmail) {
                 return cachedEmail
             }
-            // Try to get from NSUbiquitousKeyValueStore
-            if let email = NSUbiquitousKeyValueStore.default.string(forKey: "email") {
+        }
+        
+        // Try to get from NSUbiquitousKeyValueStore
+        if let email = NSUbiquitousKeyValueStore.default.string(forKey: "email") {
+            if isValidEmail(email) {
                 return email
             }
         }
+        
         return nil
     }
     #endif
@@ -82,12 +91,11 @@ final class UTMAccessControl {
                 // Parse the output to extract email
                 let lines = output.components(separatedBy: .newlines)
                 for line in lines {
-                    if line.contains("@") {
-                        let components = line.components(separatedBy: .whitespaces)
-                        for component in components {
-                            if component.contains("@") && component.contains(".") {
-                                return component.trimmingCharacters(in: .whitespaces)
-                            }
+                    let components = line.components(separatedBy: .whitespaces)
+                    for component in components {
+                        let candidate = component.trimmingCharacters(in: .whitespaces)
+                        if isValidEmail(candidate) {
+                            return candidate
                         }
                     }
                 }
@@ -99,26 +107,30 @@ final class UTMAccessControl {
         // Alternative: Try to get from defaults domain
         if let defaults = UserDefaults(suiteName: "com.apple.icloud") {
             if let email = defaults.string(forKey: "AppleID") {
-                return email
+                if isValidEmail(email) {
+                    return email
+                }
             }
-        }
-        
-        // Check NSUserName for email patterns
-        let userName = NSUserName()
-        if userName.contains("@") && userName.contains(".") {
-            return userName
         }
         
         return nil
     }
     #endif
     
+    /// Validate email format using basic pattern matching
+    private static func isValidEmail(_ email: String) -> Bool {
+        let emailPattern = #"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"#
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailPattern)
+        return emailPredicate.evaluate(with: email)
+    }
+    
     /// Block access and terminate the application
     static func blockAccess() {
         #if os(iOS) || os(visionOS)
-        // On iOS, we show an alert and exit
+        // On iOS, terminate gracefully
         DispatchQueue.main.async {
-            exit(0)
+            // Using fatalError instead of exit(0) for proper crash reporting
+            fatalError("Access denied")
         }
         #elseif os(macOS)
         // On macOS, terminate the application
