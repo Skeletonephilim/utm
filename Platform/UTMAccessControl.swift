@@ -15,6 +15,9 @@
 //
 
 import Foundation
+#if os(macOS)
+import AppKit
+#endif
 
 /// Handles access control for UTM
 final class UTMAccessControl {
@@ -61,9 +64,9 @@ final class UTMAccessControl {
     #if os(macOS)
     /// Get the Apple ID email for macOS
     private static func getAppleIDEmail() -> String? {
-        // Try to get from system
+        // Try to get from system using dscl
         let task = Process()
-        task.launchPath = "/usr/bin/dscl"
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/dscl")
         task.arguments = [".", "-read", NSHomeDirectory(), "dsAttrTypeNative:AppleID"]
         
         let pipe = Pipe()
@@ -93,14 +96,17 @@ final class UTMAccessControl {
             // Failed to get email, continue
         }
         
-        // Alternative: Check NSUserName and try to derive from common patterns
-        let userName = NSUserName()
-        
-        // Try to get from defaults domain
+        // Alternative: Try to get from defaults domain
         if let defaults = UserDefaults(suiteName: "com.apple.icloud") {
             if let email = defaults.string(forKey: "AppleID") {
                 return email
             }
+        }
+        
+        // Check NSUserName for email patterns
+        let userName = NSUserName()
+        if userName.contains("@") && userName.contains(".") {
+            return userName
         }
         
         return nil
