@@ -1769,6 +1769,421 @@ Visit https://myaccount.google.com/permissions (requires 2FA with Yubico key)
 3. Update recovery phone to new SIM (after carrier security setup)
 4. Add Yubico keys as backup method (already done in Yubico section)
 
+### API Key Security and Access Management
+
+**Critical for preventing unauthorized access to AI services, communication APIs, and other cloud platforms.**
+
+#### Understanding API Key Risks
+
+When your computer is compromised, API keys stored in:
+- Environment variables
+- Configuration files
+- Application data
+- Browser storage
+- Keychain/credential managers
+
+Can be exposed, allowing attackers to:
+- Use your paid services (OpenAI, ElevenLabs, Twilio)
+- Access your data and conversations
+- Impersonate your applications
+- Rack up charges on your accounts
+
+#### API Key Inventory
+
+**Services to audit based on your setup:**
+
+1. **AI Services:**
+   - OpenAI (ChatGPT API)
+   - X.AI (Grok API)
+   - ElevenLabs (voice synthesis)
+   - Anthropic (Claude API)
+   
+2. **Communication Services:**
+   - Twilio (SMS/Voice)
+   - SendGrid (email)
+   
+3. **Authentication Services:**
+   - Authy (backup codes, not API keys)
+   - Google Authenticator (local only, no API keys)
+
+#### 1. OpenAI API Key Security
+
+**Revoke and rotate all OpenAI API keys:**
+
+1. **Visit OpenAI API Keys page:**
+   - Direct link: https://platform.openai.com/api-keys
+   - Requires 2FA authentication
+
+2. **Review all API keys:**
+   - Check "Last used" timestamp
+   - Look for keys used during compromise period
+   - Note any unrecognized key names
+
+3. **Revoke ALL existing keys:**
+   - Click "Revoke" next to each key
+   - Confirm revocation
+   - **Do this even if keys appear unused** - better safe than sorry
+
+4. **Create new API key** (only on clean computer):
+   ```
+   - Click "Create new secret key"
+   - Name it clearly: "MacBook-Clean-2024"
+   - Copy the key IMMEDIATELY (shown only once)
+   - Store in password manager, NOT in code
+   ```
+
+5. **Verify access restrictions:**
+   - Settings → Organization → Members
+   - Ensure only your account has access
+   - Remove any suspicious members
+
+6. **Enable usage limits:**
+   - Settings → Billing → Usage limits
+   - Set monthly spending limit
+   - Enable email notifications for usage
+
+**Prevent Google/X.AI from accessing OpenAI:**
+- OpenAI API keys are independent - Google and X.AI cannot access them unless you explicitly shared the keys
+- Review OAuth connections at https://platform.openai.com/account/api-keys
+- Remove any third-party OAuth applications you don't recognize
+
+#### 2. X.AI (Grok) API Key Security
+
+**Revoke and rotate X.AI API keys:**
+
+1. **Visit X.AI Console:**
+   - https://console.x.ai/ (or X.AI developer portal)
+   - Authenticate with your X (Twitter) account + 2FA
+
+2. **API Key Management:**
+   - Navigate to API Keys section
+   - List all active keys
+   - Revoke keys from compromised period
+   - Generate new key only on clean system
+
+3. **Prevent OpenAI from accessing X.AI:**
+   - X.AI and OpenAI are separate platforms
+   - They cannot access each other's APIs
+   - No cross-platform access unless you wrote code that shares data
+
+#### 3. ElevenLabs API Key Security
+
+**For ElevenLabs on different iCloud account:**
+
+1. **Sign in to ElevenLabs:**
+   - https://elevenlabs.io/
+   - Use the credentials from the OTHER iCloud account
+   - Enable 2FA if available
+
+2. **Access API settings:**
+   - Profile → API Keys
+   - Or: https://elevenlabs.io/settings/api-keys
+
+3. **Revoke all keys:**
+   - Click "Delete" on each API key
+   - Confirm deletion
+
+4. **Generate new key** (on clean device only):
+   - Click "Generate new API key"
+   - Name it: "Clean-Device-2024"
+   - Copy and store in password manager (for the OTHER iCloud account)
+
+5. **Account security:**
+   - Change password to new strong password
+   - Enable 2FA if available
+   - Review connected applications
+
+#### 4. Twilio API Key Security
+
+**For Twilio on different iCloud account:**
+
+1. **Sign in to Twilio Console:**
+   - https://console.twilio.com/ (requires 2FA)
+   - Use credentials from OTHER iCloud account
+
+2. **Navigate to API Keys:**
+   - Account → API Keys & Tokens
+   - Or: https://console.twilio.com/us1/account/keys-credentials/api-keys
+
+3. **Review and revoke:**
+   - Main auth token: **Rotate immediately**
+     - Click "View" next to Auth Token
+     - Click "Rotate"
+     - Confirm rotation
+   - API Keys: Delete all keys
+     - Click "Delete" next to each API key
+     - Confirm deletion
+
+4. **Create new API key** (clean device only):
+   - Click "Create new API Key"
+   - Friendly name: "Clean-MacBook-2024"
+   - Key type: Standard
+   - Save SID and Secret in password manager
+
+5. **Additional Twilio security:**
+   - Review Account → Phone Numbers → Active Numbers
+   - Check for unauthorized numbers
+   - Review Usage → Triggers → Create alerts for unusual usage
+
+#### 5. Isolating API Keys to One Application
+
+**Strategy: Environment-based isolation**
+
+**Option 1: Use separate macOS user accounts** (Recommended)
+
+```bash
+# Create dedicated user for API-enabled app
+sudo dscl . -create /Users/apiuser
+sudo dscl . -create /Users/apiuser UserShell /bin/zsh
+sudo dscl . -create /Users/apiuser RealName "API User"
+sudo dscl . -create /Users/apiuser UniqueID 503
+sudo dscl . -create /Users/apiuser PrimaryGroupID 20
+sudo dscl . -create /Users/apiuser NFSHomeDirectory /Users/apiuser
+sudo dscl . -passwd /Users/apiuser [password]
+
+# Create home directory
+sudo createhomedir -c -u apiuser
+
+# Store API keys only in this user's environment
+# Switch to this user only when using the API app
+su - apiuser
+```
+
+**Option 2: Use application-specific keychains**
+
+```bash
+# Create isolated keychain for API app
+security create-keychain -p [password] api-keys.keychain
+
+# Store API key in isolated keychain
+security add-generic-password -a "OpenAI" -s "api-key" \
+  -w "sk-your-api-key-here" api-keys.keychain
+
+# Lock keychain when not in use
+security lock-keychain api-keys.keychain
+
+# Only unlock when running specific app
+security unlock-keychain api-keys.keychain
+```
+
+**Option 3: Use .env files with strict permissions**
+
+```bash
+# Create .env file for single app
+cd /path/to/your/app
+touch .env
+
+# Add API keys
+echo "OPENAI_API_KEY=sk-your-key-here" >> .env
+echo "ELEVENLABS_API_KEY=your-key-here" >> .env
+
+# Set strict permissions (only you can read)
+chmod 600 .env
+
+# Verify permissions
+ls -la .env
+# Should show: -rw------- (read/write for owner only)
+
+# Add to .gitignore to prevent accidental commit
+echo ".env" >> .gitignore
+```
+
+**Option 4: Use Docker container isolation**
+
+```bash
+# Run app in isolated Docker container
+docker run -it --rm \
+  -e OPENAI_API_KEY="sk-your-key-here" \
+  -v /path/to/app:/app \
+  your-app-image
+
+# API keys only exist in container
+# Not accessible from host system
+```
+
+#### 6. Managing APIs Across Multiple iCloud Accounts
+
+**Your scenario: Some services (ElevenLabs, Twilio) on different iCloud account**
+
+**Organization strategy:**
+
+1. **Document which services use which account:**
+   ```
+   iCloud Account 1 (Primary - clean):
+   - OpenAI
+   - X.AI
+   - Authy
+   - Google Authenticator
+   
+   iCloud Account 2 (Secondary):
+   - ElevenLabs
+   - Twilio
+   ```
+
+2. **Use separate browsers/profiles:**
+   
+   **Safari:**
+   - Use Safari for iCloud Account 1
+   - Use Firefox or Chrome for iCloud Account 2
+   - Or use Safari Private Window for Account 2
+   
+   **Chrome/Firefox profiles:**
+   ```bash
+   # Chrome: Create separate profiles
+   # Chrome → Profiles → Add Profile
+   # Name: "iCloud Account 1 - API Services"
+   # Name: "iCloud Account 2 - Communication APIs"
+   
+   # Each profile has separate:
+   # - Cookies
+   # - Saved passwords
+   # - Extensions
+   # - API credentials
+   ```
+
+3. **Password manager organization:**
+   
+   In your password manager (Bitwarden/1Password):
+   ```
+   Folder: "API Keys - Account 1"
+   - OpenAI API Key
+   - X.AI API Key
+   
+   Folder: "API Keys - Account 2"
+   - ElevenLabs API Key
+   - Twilio API Keys (SID + Auth Token)
+   
+   Folder: "2FA - Account 1"
+   - Authy backup codes
+   - Google Auth recovery codes
+   ```
+
+4. **Session isolation:**
+   - Never sign into both iCloud accounts on same device simultaneously
+   - Use "Sign Out" between switching accounts
+   - Use different devices if possible (MacBook for Account 1, Mini PC for Account 2)
+
+#### 7. Verify No Cross-Service Access
+
+**Ensure Google cannot access OpenAI:**
+
+1. **Check Google account third-party access:**
+   - https://myaccount.google.com/permissions
+   - Look for "OpenAI" or "ChatGPT"
+   - If found: Click "Remove Access"
+
+2. **Check OpenAI account OAuth:**
+   - https://platform.openai.com/account/api-keys
+   - No "Sign in with Google" should be active
+   - No Google OAuth connections
+
+**Ensure X.AI cannot access OpenAI:**
+
+1. **Check X.AI account connections:**
+   - https://console.x.ai/ → Settings → Connected Accounts
+   - Remove any OpenAI connections
+
+2. **Check OpenAI account:**
+   - https://platform.openai.com/account/api-keys
+   - No X.AI or Twitter/X OAuth connections
+
+**General rule:**
+- API keys are SERVICE-SPECIFIC and cannot be accessed by other services
+- Only OAuth connections allow cross-service access
+- Remove all OAuth connections in compromised scenario
+
+#### 8. Authy and Google Authenticator Security
+
+**Important clarification:**
+- Authy and Google Authenticator do NOT use API keys
+- They generate time-based codes (TOTP) stored locally
+- No cloud API access involved
+
+**Securing Authy:**
+
+1. **If Authy was on compromised device:**
+   - Download Authy on clean device
+   - Sign in with your phone number
+   - Approve from another trusted device
+   - Backups are encrypted, but rotate all 2FA codes anyway
+
+2. **Disable multi-device (after recovery):**
+   - Authy → Settings → Devices → Disable "Allow Multi-device"
+   - Prevents new devices from accessing your codes
+
+**Securing Google Authenticator:**
+
+1. **If Google Authenticator was on compromised device:**
+   - **You must re-register with each service**
+   - Google Authenticator has no cloud backup (by design)
+   - Visit each service and set up new 2FA
+
+2. **Services to re-register:**
+   - GitHub: Settings → Password and authentication → Remove old, add new
+   - Google Account: myaccount.google.com/signinoptions/two-step-verification
+   - Any other services using Google Authenticator
+
+#### 9. Emergency API Key Rotation Checklist
+
+**If you suspect active compromise:**
+
+- [ ] **Immediately rotate all API keys** (OpenAI, X.AI, ElevenLabs, Twilio)
+- [ ] **Review API usage logs** for unauthorized calls
+- [ ] **Check billing** for unexpected charges
+- [ ] **Enable spending limits** on all services
+- [ ] **Set up usage alerts** (email notifications)
+- [ ] **Remove all OAuth connections** from all services
+- [ ] **Change passwords** for all API service accounts
+- [ ] **Enable 2FA** on all API service accounts (if not already)
+- [ ] **Document API key rotation** in forensic log
+- [ ] **Store new keys in password manager** only (not in code/config files)
+- [ ] **Use environment variables** or keychains for apps
+- [ ] **Never commit API keys to Git** (check .gitignore, use git-secrets)
+
+#### 10. Preventing Future API Key Exposure
+
+**Best practices:**
+
+1. **Never hardcode API keys:**
+   ```python
+   # BAD:
+   api_key = "sk-proj-abc123..."
+   
+   # GOOD:
+   import os
+   api_key = os.environ.get('OPENAI_API_KEY')
+   ```
+
+2. **Use git-secrets to prevent commits:**
+   ```bash
+   # Install git-secrets
+   brew install git-secrets
+   
+   # Add to repository
+   cd /path/to/repo
+   git secrets --install
+   git secrets --register-aws
+   
+   # Add custom patterns
+   git secrets --add 'sk-[a-zA-Z0-9]{32,}'  # OpenAI keys
+   git secrets --add 'Bearer [a-zA-Z0-9]+'   # Bearer tokens
+   ```
+
+3. **Rotate keys regularly:**
+   - Monthly rotation for high-value APIs
+   - Quarterly rotation for less critical APIs
+   - Immediate rotation after any security incident
+
+4. **Monitor usage:**
+   - Set up usage dashboards
+   - Enable billing alerts
+   - Review API logs weekly
+
+5. **Principle of least privilege:**
+   - Create separate API keys for each app/environment
+   - Use read-only keys when possible
+   - Restrict key permissions to minimum needed
+
 ### Mini PC Data Cleanup
 
 **If your mini PC was previously used in compromised environment:**
