@@ -1844,8 +1844,9 @@ Can be exposed, allowing attackers to:
 
 **Prevent Google/X.AI from accessing OpenAI:**
 - OpenAI API keys are independent - Google and X.AI cannot access them unless you explicitly shared the keys
-- Review OAuth connections at https://platform.openai.com/account/api-keys
-- Remove any third-party OAuth applications you don't recognize
+- Review OAuth connections at Settings → General (in OpenAI platform)
+- Check for any third-party integrations or connected apps
+- Remove any OAuth applications you don't recognize
 
 #### 2. X.AI (Grok) API Key Security
 
@@ -1932,11 +1933,17 @@ Can be exposed, allowing attackers to:
 **Option 1: Use separate macOS user accounts** (Recommended)
 
 ```bash
+# Check available user IDs to avoid conflicts
+dscl . -list /Users UniqueID | sort -n -k2 | tail -5
+
 # Create dedicated user for API-enabled app
+# Choose a UID not in use (e.g., 503, 504, etc.)
+UNIQUE_ID=503  # Adjust if this UID is already taken
+
 sudo dscl . -create /Users/apiuser
 sudo dscl . -create /Users/apiuser UserShell /bin/zsh
 sudo dscl . -create /Users/apiuser RealName "API User"
-sudo dscl . -create /Users/apiuser UniqueID 503
+sudo dscl . -create /Users/apiuser UniqueID $UNIQUE_ID
 sudo dscl . -create /Users/apiuser PrimaryGroupID 20
 sudo dscl . -create /Users/apiuser NFSHomeDirectory /Users/apiuser
 sudo dscl . -passwd /Users/apiuser [password]
@@ -2157,7 +2164,19 @@ docker run -it --rm \
 2. **Use git-secrets to prevent commits:**
    ```bash
    # Install git-secrets
+   
+   # On macOS with Homebrew:
    brew install git-secrets
+   
+   # On Linux:
+   git clone https://github.com/awslabs/git-secrets.git
+   cd git-secrets
+   sudo make install
+   
+   # Or on macOS without Homebrew:
+   git clone https://github.com/awslabs/git-secrets.git
+   cd git-secrets
+   PREFIX=/usr/local make install
    
    # Add to repository
    cd /path/to/repo
