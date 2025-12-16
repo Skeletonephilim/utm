@@ -35,6 +35,13 @@ class Main {
     static var jitAvailable = true
     
     static func main() {
+        // Check access control
+        if UTMAccessControl.isAccessBlocked() {
+            logger.warning("Access denied for blocked user")
+            UTMAccessControl.blockAccess()
+            return
+        }
+        
         #if (os(iOS) || os(visionOS)) && WITH_JIT
         // check if we have jailbreak
         if jb_spawn_ptrace_child(CommandLine.argc, CommandLine.unsafeArgv) {
