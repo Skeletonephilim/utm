@@ -359,7 +359,7 @@ When working with UTM virtualization, several iOS and macOS security and network
 
 ### Server Management with ServerCat
 
-**ServerCat** (and similar tools like Leam) provides monitoring and management for servers and VMs.
+**ServerCat** and similar server monitoring tools provide monitoring and management capabilities for servers and VMs.
 
 **Capabilities:**
 - Monitor VM resource usage (CPU, RAM, disk)
@@ -441,7 +441,7 @@ When working with security-sensitive VMs, consider implementing time limits and 
 
 | Tool | iOS Support | macOS Support | VM Guest Support | Security Focus |
 |------|-------------|---------------|------------------|----------------|
-| Working Copy | ✅ | ❌ | N/A | Version Control |
+| Working Copy | ✅ | ✅ | N/A | Version Control |
 | Tailscale | ✅ | ✅ | ✅ | Zero-Trust VPN |
 | HitVPN | ✅ | ✅ | ❌ | Privacy VPN |
 | Surge | ✅ | ✅ | Via Proxy | Network Debug |
