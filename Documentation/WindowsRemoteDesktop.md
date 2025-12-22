@@ -368,7 +368,7 @@ See [UTM Network Configuration](https://docs.getutm.app/settings/network/) for d
 
 ## Additional Resources
 
-- [Microsoft Remote Desktop Documentation](https://docs.microsoft.com/en-us/windows-server/remote/remote-desktop-services/)
+- [Microsoft Remote Desktop Documentation](https://learn.microsoft.com/en-us/windows-server/remote/remote-desktop-services/)
 - [AnyDesk Knowledge Base](https://anydesk.com/en/knowledge)
 - [Chrome Remote Desktop Help](https://support.google.com/chrome/answer/1649523)
 - [Tailscale Documentation](https://tailscale.com/kb/)
