@@ -255,6 +255,7 @@ VNC is an open protocol for remote desktop access.
 8. Click "Install AnyDesk on this computer"
 9. Click through the installation
 10. **IMPORTANT:** Write down the 9-digit number you see (this is your AnyDesk ID)
+    - **Tip:** You can always find this ID later in the AnyDesk main window title bar or under Settings → General
 11. Click the three lines menu (☰) → Settings
 12. Click "Security" on the left
 13. Under "Unattended Access", click "Set password"
@@ -279,7 +280,8 @@ VNC is an open protocol for remote desktop access.
 Most solutions above work automatically through firewalls. If using RDP or VNC over the internet:
 
 1. **Port Forwarding (Router):**
-   - Access your router settings (usually at 192.168.1.1)
+   - Access your router settings (commonly at 192.168.1.1, 192.168.0.1, or 10.0.0.1)
+   - **Tip:** Find your router IP with `ipconfig` in Command Prompt - look for "Default Gateway"
    - Find Port Forwarding section
    - Forward port 3389 (RDP) or 5900 (VNC) to your PC's local IP
    - **Security Warning:** Only do this with VPN or strong security
