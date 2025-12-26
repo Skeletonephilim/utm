@@ -1,8 +1,19 @@
 # Windows Remote Desktop Setup Guide
 
-This guide provides instructions for setting up remote desktop access on a clean Windows installation, particularly useful when you're using borrowed hardware (screen and keyboard) and need remote access.
+This guide provides instructions for setting up remote desktop access on a clean Windows installation, including headless setup options (without screen or keyboard access).
 
 ## Quick Answer
+
+### If You Have NO Screen/Keyboard Access:
+
+**See the [Headless Setup section](#headless-setup-no-screen-or-keyboard)** below for options to:
+- Find your mini PC's IP address via your router
+- Set up remote access using USB drive methods  
+- Locate your device on the network
+
+**Most practical solution:** Borrow a screen/keyboard for 10-15 minutes to install AnyDesk, then return them and have permanent remote access.
+
+### If You Have Temporary Screen/Keyboard Access:
 
 For a clean Windows installation on a mini PC, install one of the following:
 
@@ -20,6 +31,240 @@ For a clean Windows installation on a mini PC, install one of the following:
 - Free with Google account
 - Works through browser
 - Cross-platform support
+
+## Headless Setup (No Screen or Keyboard)
+
+If you don't have a screen or keyboard for your mini PC, you have several options to set up remote access:
+
+### Option A: Find Your Mini PC on the Network
+
+If Windows is already installed and connected to your network:
+
+1. **Find the IP address using your router:**
+   - Open your router's admin panel (usually at 192.168.1.1, 192.168.0.1, or 10.0.0.1)
+   - Log in with your router credentials
+   - Look for "Connected Devices", "Device List", or "DHCP Clients"
+   - Find your mini PC by looking for:
+     - Device name (might be "DESKTOP-XXXXX" or "MINISFORUM" or similar)
+     - MAC address (physical address printed on the mini PC or box)
+   - Note the IP address (e.g., 192.168.1.100)
+
+2. **Check if Remote Desktop is already enabled:**
+   - Try connecting with Remote Desktop Connection (if you have Windows Pro)
+   - On your main computer, open Remote Desktop Connection (type `mstsc` in Run)
+   - Enter the IP address and try to connect
+   - If it connects, you're done! If not, continue to Option B
+
+### Option B: Use a USB Installation Drive with Auto-Setup
+
+Create a USB drive that automatically installs remote access software on first boot:
+
+**Requirements:**
+- USB flash drive (8GB+)
+- Another computer to prepare the USB drive
+- Windows installation media or existing Windows on the mini PC
+
+**Steps:**
+
+1. **Create an AutoRun USB drive:**
+   - Download AnyDesk portable version from https://anydesk.com/en/downloads/windows
+   - Download the standalone installer (not the .exe that requires installation)
+   - Create a folder on your USB drive called `RemoteSetup`
+   - Copy the AnyDesk portable .exe into this folder
+   - Create a batch file named `setup.bat` with this content:
+
+```batch
+@echo off
+echo Setting up remote access...
+cd %~dp0
+start AnyDesk.exe --install "C:\Program Files (x86)\AnyDesk" --start-with-win --create-shortcuts
+timeout /t 5
+echo Setup complete. AnyDesk ID will be shown on screen.
+pause
+```
+
+2. **Boot the mini PC and run the setup:**
+   - Insert the USB drive into the mini PC
+   - If Windows is already installed, set it to auto-login (if you can access it briefly):
+     - Press Win+R, type `netplwiz`, press Enter
+     - Uncheck "Users must enter a username and password"
+     - Apply and enter your password
+   - Restart the mini PC
+   - The USB drive should appear in File Explorer
+   - You'll need brief access to run the setup.bat file
+
+### Option C: Network Boot (Advanced)
+
+If the mini PC supports PXE boot, you can set up network installation, but this requires advanced networking knowledge and a PXE server.
+
+### Option D: Temporary Access Method
+
+**The practical solution for most users:**
+
+Since you mentioned you can borrow a screen/keyboard tomorrow:
+
+1. **Borrow the peripherals temporarily** (even for 15 minutes)
+2. **Install AnyDesk** following the quick setup below
+3. **Return the peripherals** - you'll have permanent remote access
+
+This is the fastest and most reliable method. The setup takes less than 10 minutes.
+
+## Finding Your Mini PC's IP and MAC Address
+
+### From Your Router
+
+1. Access your router's web interface:
+   - Common addresses: `192.168.1.1`, `192.168.0.1`, `10.0.0.1`, `192.168.254.254`
+   - Try typing these in your browser
+   - Default credentials are often `admin/admin` or `admin/password` (check router label)
+
+2. Navigate to device list:
+   - Look for sections named:
+     - "Connected Devices"
+     - "Device List"  
+     - "DHCP Clients"
+     - "LAN Status"
+     - "Attached Devices"
+
+3. Identify your mini PC:
+   - Look for device names containing: DESKTOP, MINISFORUM, MINIPC, or your PC model
+   - Check the MAC address (format: XX:XX:XX:XX:XX:XX)
+   - The MAC address is usually on a sticker on your mini PC
+
+4. Note the IP address for remote connection
+
+### Using Network Scanning Tools
+
+If you can't access the router, use a network scanner from another device on the same network:
+
+**On Windows:**
+- Download Advanced IP Scanner (free): https://www.advanced-ip-scanner.com/
+- Run scan on your network range (usually 192.168.1.1-254)
+- Look for your mini PC in the results
+
+**On macOS:**
+- Use LAN Scan from the App Store (free)
+- Scan your network
+- Look for Windows devices
+
+**On Linux:**
+```bash
+sudo nmap -sn 192.168.1.0/24
+```
+
+**On Android/iOS:**
+- Install "Fing" app
+- Scan network
+- Look for your device
+
+## Installing VS Code
+
+Once you have remote access to your Windows mini PC (or if you can access it with borrowed peripherals):
+
+### Method 1: Download and Install (Windows)
+
+1. **Access the mini PC remotely** (using AnyDesk, RDP, etc.) or with peripherals
+
+2. **Download VS Code:**
+   - Open browser (Edge is pre-installed on Windows)
+   - Go to: https://code.visualstudio.com/
+   - Click "Download for Windows"
+   - Choose "User Installer" (recommended) or "System Installer"
+
+3. **Install:**
+   - Run the downloaded installer (`VSCodeUserSetup-x64-*.exe`)
+   - Accept the license agreement
+   - Choose installation location (default is fine)
+   - **Important: Check these options:**
+     - ✅ Add "Open with Code" action to context menu
+     - ✅ Add to PATH (important for command line access)
+     - ✅ Create desktop icon (if desired)
+   - Click Install
+   - Launch VS Code when installation completes
+
+4. **Verify installation:**
+   - VS Code should open automatically
+   - Or press Win key and type "Visual Studio Code"
+
+### Method 2: Install via Command Line (Windows)
+
+If you have command line access via remote desktop:
+
+1. **Using winget (Windows 10/11 with App Installer):**
+```cmd
+winget install Microsoft.VisualStudioCode
+```
+
+2. **Using Chocolatey** (if installed):
+```cmd
+choco install vscode
+```
+
+3. **Download via PowerShell and install:**
+```powershell
+# Download installer
+Invoke-WebRequest -Uri "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user" -OutFile "$env:TEMP\VSCodeSetup.exe"
+
+# Run installer silently
+Start-Process -FilePath "$env:TEMP\VSCodeSetup.exe" -ArgumentList "/VERYSILENT /MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath" -Wait
+```
+
+### Method 3: Portable Version (No Installation Required)
+
+If you want VS Code on a USB drive or without admin rights:
+
+1. Go to https://code.visualstudio.com/
+2. Click "Download" → "Windows" → "zip" (under "Other downloads")
+3. Extract the .zip file to your desired location
+4. Run `Code.exe` from the extracted folder
+
+### VS Code on Linux (Kali Linux in VirtualBox)
+
+If you're running Kali Linux in VirtualBox on your mini PC:
+
+1. **Access your Kali Linux VM**
+
+2. **Download and install VS Code:**
+```bash
+# Download VS Code .deb package
+wget -O vscode.deb 'https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64'
+
+# Install VS Code
+sudo apt install ./vscode.deb
+
+# Or use snap (if available)
+sudo snap install --classic code
+```
+
+3. **Launch VS Code:**
+```bash
+code
+```
+
+### Essential VS Code Extensions for Beginners
+
+After installing VS Code, install these helpful extensions:
+
+1. **Open Extensions panel:** Press `Ctrl+Shift+X`
+
+2. **Recommended extensions:**
+   - **Python** (if learning Python)
+   - **Live Server** (for web development)
+   - **GitLens** (for Git integration)
+   - **Remote - SSH** (to connect to remote Linux systems)
+   - **Docker** (if using containers)
+   - **Markdown All in One** (for documentation)
+
+3. **Search for each extension** and click Install
+
+### Configuring VS Code for Remote Development
+
+If you want to code on your mini PC from another device:
+
+1. **Install "Remote - SSH" extension** in VS Code
+2. Press `Ctrl+Shift+P` and type "Remote-SSH: Connect to Host"
+3. Enter: `username@mini-pc-ip-address`
+4. You can now edit files on your mini PC from any device running VS Code
 
 ## Detailed Setup Instructions
 
