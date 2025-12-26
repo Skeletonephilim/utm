@@ -69,8 +69,7 @@ index 903422c6..c2a48135 100644
 From c6cfa4b7eac9aed6228ac627531d54e2cefadf22 Mon Sep 17 00:00:00 2001
 From: Benjamin Berg <bberg@redhat.com>
 Date: Thu, 7 Apr 2022 12:43:08 +0200
-Subject: [PATCH 2/3] darwin: Fix crash in log handler when stopping event
- thread
+Subject: [PATCH 2/3] darwin: Fix crash in log handler when stopping event thread
 
 The darwin event thread (in contrast to other OS implementations) tries
 to log to the context that created it. However, this context is only
@@ -130,8 +129,7 @@ index c2a48135..2c273e3a 100644
 From 2c55fbe171830b9ac28c5fbdf56cc785942d2b44 Mon Sep 17 00:00:00 2001
 From: Nathan Hjelm <hjelmn@google.com>
 Date: Wed, 6 Apr 2022 10:24:14 -0600
-Subject: [PATCH 3/3] darwin: Do not clear device data toggle on macOS 10.5 or
- newer
+Subject: [PATCH 3/3] darwin: Do not clear device data toggle on macOS 10.5 or newer
 
 Historically Mac OS X always cleared the data toggle on the host side. For
 consistency, libusb has been calling ClearPipeStallBothEnds to also clear the
