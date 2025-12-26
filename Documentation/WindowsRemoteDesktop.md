@@ -67,31 +67,37 @@ Create a USB drive that automatically installs remote access software on first b
 **Steps:**
 
 1. **Create an AutoRun USB drive:**
-   - Download AnyDesk portable version from https://anydesk.com/en/downloads/windows
-   - Download the standalone installer (not the .exe that requires installation)
+   - Download AnyDesk from https://anydesk.com/en/downloads/windows
+   - Get the standalone executable (the direct .exe file, not the installer that opens a wizard)
    - Create a folder on your USB drive called `RemoteSetup`
-   - Copy the AnyDesk portable .exe into this folder
-   - Create a batch file named `setup.bat` with this content:
+   - Copy the AnyDesk.exe into this folder and rename it to `AnyDesk.exe` if needed
+   - Create a batch file named `setup.bat` in the same folder with this content:
 
 ```batch
 @echo off
 echo Setting up remote access...
 cd %~dp0
+:: Install AnyDesk and configure auto-start
 start AnyDesk.exe --install "%ProgramFiles%\AnyDesk" --start-with-win --create-shortcuts
 timeout /t 5
 echo Setup complete. AnyDesk ID will be shown on screen.
 pause
 ```
 
-2. **Boot the mini PC and run the setup:**
+2. **Prerequisites (if you have brief initial access):**
+   - **Important:** Auto-login should be configured during initial Windows setup
+   - Press Win+R, type `netplwiz`, press Enter
+   - Uncheck "Users must enter a username and password"
+   - Apply and enter your password
+   - This allows the PC to boot to desktop automatically
+
+3. **Boot the mini PC and run the setup:**
    - Insert the USB drive into the mini PC
+   - Boot or restart the PC
+   - Navigate to the USB drive and run `setup.bat`
    - **Note:** This method still requires brief manual access to run the batch file
-   - If you can enable auto-login beforehand:
-     - Press Win+R, type `netplwiz`, press Enter
-     - Uncheck "Users must enter a username and password"
-     - Apply and enter your password
-   - After restart, navigate to the USB drive and run `setup.bat`
-   - **Alternative:** This is primarily useful for reducing setup time, not for completely headless setup
+   - **This is primarily useful for reducing setup time, not for completely headless setup**
+
 
 ### Option C: Network Boot (Advanced)
 
@@ -206,6 +212,9 @@ choco install vscode
 Invoke-WebRequest -Uri "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user" -OutFile "$env:TEMP\VSCodeSetup.exe"
 
 # Run installer silently with recommended options
+# addcontextmenufiles: adds "Open with Code" to file right-click menu
+# addcontextmenufolders: adds "Open with Code" to folder right-click menu  
+# addtopath: adds VS Code to system PATH for command-line access
 Start-Process -FilePath "$env:TEMP\VSCodeSetup.exe" -ArgumentList "/VERYSILENT /MERGETASKS=addcontextmenufiles,addcontextmenufolders,addtopath" -Wait
 ```
 
