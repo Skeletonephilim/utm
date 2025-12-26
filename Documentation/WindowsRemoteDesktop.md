@@ -155,8 +155,10 @@ If you can't access the router, use a network scanner from another device on the
 
 **On Linux:**
 ```bash
+# Network scan - use responsibly and only on networks you own/manage
 sudo nmap -sn 192.168.1.0/24
 ```
+**Note:** Network scanning should only be performed on networks you own or have permission to scan.
 
 **On Android/iOS:**
 - Install "Fing" app
@@ -212,9 +214,9 @@ choco install vscode
 Invoke-WebRequest -Uri "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user" -OutFile "$env:TEMP\VSCodeSetup.exe"
 
 # Run installer silently with recommended options
-# addcontextmenufiles: adds "Open with Code" to file right-click menu
-# addcontextmenufolders: adds "Open with Code" to folder right-click menu  
-# addtopath: adds VS Code to system PATH for command-line access
+# addcontextmenufiles:    adds "Open with Code" to file right-click menu
+# addcontextmenufolders:  adds "Open with Code" to folder right-click menu  
+# addtopath:              adds VS Code to system PATH for command-line access
 Start-Process -FilePath "$env:TEMP\VSCodeSetup.exe" -ArgumentList "/VERYSILENT /MERGETASKS=addcontextmenufiles,addcontextmenufolders,addtopath" -Wait
 ```
 
@@ -527,7 +529,11 @@ VNC is an open protocol for remote desktop access.
 5. Enter the password you created
 6. You can now control the mini PC remotely!
 
-**You can now return the borrowed screen and keyboard** - you have full remote access to your mini PC.
+---
+
+**✅ Success! You can now return the borrowed screen and keyboard** - you have full remote access to your mini PC from any device.
+
+---
 
 ## Firewall Configuration
 
