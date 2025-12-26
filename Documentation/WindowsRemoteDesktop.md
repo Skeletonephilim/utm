@@ -77,7 +77,7 @@ Create a USB drive that automatically installs remote access software on first b
 @echo off
 echo Setting up remote access...
 cd %~dp0
-start AnyDesk.exe --install "C:\Program Files (x86)\AnyDesk" --start-with-win --create-shortcuts
+start AnyDesk.exe --install "%ProgramFiles%\AnyDesk" --start-with-win --create-shortcuts
 timeout /t 5
 echo Setup complete. AnyDesk ID will be shown on screen.
 pause
@@ -85,13 +85,13 @@ pause
 
 2. **Boot the mini PC and run the setup:**
    - Insert the USB drive into the mini PC
-   - If Windows is already installed, set it to auto-login (if you can access it briefly):
+   - **Note:** This method still requires brief manual access to run the batch file
+   - If you can enable auto-login beforehand:
      - Press Win+R, type `netplwiz`, press Enter
      - Uncheck "Users must enter a username and password"
      - Apply and enter your password
-   - Restart the mini PC
-   - The USB drive should appear in File Explorer
-   - You'll need brief access to run the setup.bat file
+   - After restart, navigate to the USB drive and run `setup.bat`
+   - **Alternative:** This is primarily useful for reducing setup time, not for completely headless setup
 
 ### Option C: Network Boot (Advanced)
 
@@ -101,7 +101,7 @@ If the mini PC supports PXE boot, you can set up network installation, but this 
 
 **The practical solution for most users:**
 
-Since you mentioned you can borrow a screen/keyboard tomorrow:
+If you can borrow peripherals temporarily (even for 15 minutes):
 
 1. **Borrow the peripherals temporarily** (even for 15 minutes)
 2. **Install AnyDesk** following the quick setup below
@@ -205,8 +205,8 @@ choco install vscode
 # Download installer
 Invoke-WebRequest -Uri "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user" -OutFile "$env:TEMP\VSCodeSetup.exe"
 
-# Run installer silently
-Start-Process -FilePath "$env:TEMP\VSCodeSetup.exe" -ArgumentList "/VERYSILENT /MERGETASKS=!runcode,addcontextmenufiles,addcontextmenufolders,addtopath" -Wait
+# Run installer silently with recommended options
+Start-Process -FilePath "$env:TEMP\VSCodeSetup.exe" -ArgumentList "/VERYSILENT /MERGETASKS=addcontextmenufiles,addcontextmenufolders,addtopath" -Wait
 ```
 
 ### Method 3: Portable Version (No Installation Required)
