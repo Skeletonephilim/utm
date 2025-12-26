@@ -1,4 +1,4 @@
-#  Mini PC
+# UTM
 [![Build](https://github.com/utmapp/UTM/workflows/Build/badge.svg?branch=main&event=push)][1]
 
 > It is possible to invent a single machine which can be used to compute any computable sequence.
@@ -54,6 +54,10 @@ UTM is also available for macOS: https://mac.getutm.app/
 ### [Organizing Storage Devices](Documentation/OrganizingStorageDevices.md)
 
 Learn how to organize and manage storage devices, security hardware, and peripherals for your UTM virtualization setup.
+
+### [Windows Remote Desktop Setup](Documentation/WindowsRemoteDesktop.md)
+
+Guide for setting up remote desktop access on Windows systems, including options for accessing UTM host machines remotely.
 
 ## Related
 
